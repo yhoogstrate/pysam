@@ -14,7 +14,7 @@ from libc.stdlib cimport calloc, free
 from libc.string cimport strncpy
 from libc.stdio cimport fprintf, stderr, fflush
 from libc.stdio cimport stdout as c_stdout
-from posix.fcntl cimport open as c_open, O_WRONLY
+from posix.fcntl cimport open as c_open, O_WRONLY, O_CREAT
 
 from libcsamtools cimport samtools_main, samtools_set_stdout, samtools_set_stderr, \
     samtools_unset_stderr, samtools_unset_stdout, samtools_set_stdout_fn, samtools_set_optind
@@ -281,7 +281,7 @@ def _pysam_dispatch(collection,
     if save_stdout:
         stdout_f = save_stdout
         stdout_h = c_open(force_bytes(stdout_f),
-                          O_WRONLY)
+                          O_WRONLY | O_CREAT, 0644)
         if stdout_h == -1:
             raise IOError("error while opening {} for writing".format(stdout_f))
 
@@ -289,7 +289,7 @@ def _pysam_dispatch(collection,
         samtools_set_stdout(stdout_h)
         bcftools_set_stdout_fn(force_bytes(stdout_f))
         bcftools_set_stdout(stdout_h)
-            
+    
     elif catch_stdout:
         stdout_h, stdout_f = tempfile.mkstemp()
         MAP_STDOUT_OPTIONS = {
